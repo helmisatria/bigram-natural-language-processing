@@ -8,7 +8,7 @@ Created on Wed Sep  5 11:27:19 2018
 import pandas
 import numpy as np
 import re
-
+import collections
 
 data = pandas.read_csv('data.csv')
 
@@ -21,20 +21,53 @@ for i, article in enumerate(articles):
     
     bagOfWords.append(clean_article.lower().split())
 
+
 bagOfWords = np.concatenate(bagOfWords)
+
 
 unique_bagOfWords = np.unique(bagOfWords)
 
 amountOfWords = []
 
-for i, word_comparison in enumerate(unique_bagOfWords):
-    count = 0
-    for j, word in enumerate(bagOfWords):
-        if (word_comparison == word):
-            count += 1
-    amountOfWords.append(count)
+counter_word = collections.Counter(bagOfWords)
 
-#for i, word_comparison in enumerate(unique_bagOfWords):
-#    for j, word in enumerate(unique_bagOfWords):
-#        if (word == word_comparison):
+# Compute raw Bigram Counts
+
+bigram_counts = np.zeros((len(unique_bagOfWords), len(unique_bagOfWords)), dtype=int)
+
+for z, wordArticle in enumerate(bagOfWords):
+    print('z: ' + str(z))
+    
+    if (z == len(bagOfWords) - 1):
+        break
+    
+    for i, wordX in enumerate(unique_bagOfWords):
+        
+        for j, wordY in enumerate(unique_bagOfWords):
             
+            if (wordX != wordArticle):
+                break
+                        
+            if (wordX == wordArticle and wordY == bagOfWords[z + 1]):
+                
+                bigram_counts[i][j] += 1
+            
+
+bigram_probabilities = np.zeros((len(unique_bagOfWords), len(unique_bagOfWords)), dtype=float)
+
+for i, bigramCountX in enumerate(bigram_counts):
+    
+    for j, count in enumerate(bigramCountX):
+        
+        index = i
+        if (i > len(unique_bagOfWords)):
+            index = i * j
+                
+        bigram_probabilities[i][j] = count/counter_word[unique_bagOfWords[index]]
+
+
+pandas.DataFrame(bigram_probabilities).to_csv('Bigram_Probabilities.csv', index=False, header=False)
+pandas.DataFrame(unique_bagOfWords).to_csv('BagOfWords.csv', index=False, header=False)
+    
+        
+
