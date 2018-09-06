@@ -51,7 +51,6 @@ for z, wordArticle in enumerate(bagOfWords):
             if (wordX == wordArticle and wordY == bagOfWords[z + 1]):
                 
                 bigram_counts[i][j] += 1
-            
 
 bigram_probabilities = np.zeros((len(unique_bagOfWords), len(unique_bagOfWords)), dtype=float)
 
