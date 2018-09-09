@@ -9,8 +9,9 @@ import pandas
 import numpy as np
 import re
 import collections
+import math
 
-data = pandas.read_csv('data.csv')
+data = pandas.read_csv('data-tmp.csv')
 
 articles = data['article']
 
@@ -23,7 +24,6 @@ for i, article in enumerate(articles):
 
 
 bagOfWords = np.concatenate(bagOfWords)
-
 
 unique_bagOfWords = np.unique(bagOfWords)
 
@@ -50,20 +50,52 @@ for z, wordArticle in enumerate(bagOfWords):
                         
             if (wordX == wordArticle and wordY == bagOfWords[z + 1]):
                 
-                bigram_counts[i][j] += 1
+                bigram_counts[i][j] += 2
+
+# Laplace smoothing
+
+bigram_counts[bigram_counts > 0 ] += 1
+bigram_counts[bigram_counts == 0 ] = 1
+
+# Compute Bigram Probabilities
 
 bigram_probabilities = np.zeros((len(unique_bagOfWords), len(unique_bagOfWords)), dtype=float)
 
 for i, bigramCountX in enumerate(bigram_counts):
     
     for j, count in enumerate(bigramCountX):
-        
-        index = i
-        if (i > len(unique_bagOfWords)):
-            index = i * j
-                
-        bigram_probabilities[i][j] = count/counter_word[unique_bagOfWords[index]]
 
+        bigram_probabilities[i][j] = count/(counter_word[unique_bagOfWords[i]] + len(unique_bagOfWords))
+
+sentence = 'Bank Indonesia BI akan memantau'.lower().split()
+
+sumOfLog = 0
+
+for i, word in enumerate(sentence):
+    
+    if (i == len(sentence) - 1): break
+    
+    word_index1 = unique_bagOfWords.tolist().index(word)
+    word_index2 = unique_bagOfWords.tolist().index(sentence[i + 1])
+    
+    prob = bigram_probabilities[word_index1, word_index2]
+    log = math.log2(prob)
+    
+    sumOfLog += log
+    
+print('Sum of Log ', sumOfLog)
+
+l = 1/len(sentence) * sumOfLog
+perplexity = math.pow(2, -1 * l)
+
+print('Perplexity: ', perplexity)
+
+# Perplexity = 2 pangkat -l, l = 1/M * (Sum of Log)
+
+print('Index Agustus: ' + str(unique_bagOfWords.tolist().index('agustus')))
+print('Index Akhir: ' + str(unique_bagOfWords.tolist().index('akhir')))
+
+print('Prob: ' +str(bigram_probabilities[unique_bagOfWords.tolist().index('agustus'), unique_bagOfWords.tolist().index('akhir')]))
 
 pandas.DataFrame(bigram_probabilities).to_csv('Bigram_Probabilities.csv', index=False, header=False)
 pandas.DataFrame(unique_bagOfWords).to_csv('BagOfWords.csv', index=False, header=False)
