@@ -7,7 +7,7 @@ from katadata.items import KataDataItem
 class UrlsSpider(CrawlSpider):
     name = 'urls'
     allowed_domains = ['katadata.co.id']
-    start_urls = ['https://katadata.co.id/indeks/listing']
+    start_urls = ['http://katadata.co.id/indeks/search/-/-/-/-/255/-']
     
     rules = (
         Rule(LinkExtractor(allow=(), restrict_css=('.pagination__item.next > .pagination__link',)),
@@ -17,7 +17,7 @@ class UrlsSpider(CrawlSpider):
     def parse_item(self, response):
         print('Processing..' + response.url)
         
-        item_links = response.css('h4 > a::attr(href)').extract()       
+        item_links = response.css('h4 > a::attr(href)').extract()
         
         for a in item_links:
             yield scrapy.Request(a, callback=self.parse_detail_page)

@@ -2,7 +2,7 @@
 """
 Created on Wed Sep  5 11:27:19 2018
 
-@author: user
+@author: Helmi Satria
 """
 
 import pandas
@@ -11,17 +11,16 @@ import re
 import collections
 import math
 
-data = pandas.read_csv('data-tmp.csv')
+data = pandas.read_csv('data-finance.csv')
 
 articles = data['article']
 
 bagOfWords = []
 
 for i, article in enumerate(articles):
-    clean_article = re.sub('[–"!@#$%()&+,./;:=“”\'0123456789‘-]', '', article)
+    clean_article = re.sub('[–"!@#$%()&+,./;:=“”\'0123456789‘\[\]-]', '', article)
     
     bagOfWords.append(clean_article.lower().split())
-
 
 bagOfWords = np.concatenate(bagOfWords)
 
@@ -67,35 +66,41 @@ for i, bigramCountX in enumerate(bigram_counts):
 
         bigram_probabilities[i][j] = count/(counter_word[unique_bagOfWords[i]] + len(unique_bagOfWords))
 
-sentence = 'Bank Indonesia BI akan memantau'.lower().split()
+sentences = [
+    'Nasabah pemegang kartu debit Standard Chartered Bank Indonesia',
+    'pemegang Nasabah debit kartu Standard Chartered Indonesia Bank',
+    'Otoritas Jasa Keuangan OJK meluncurkan Paket Kebijakan Agustus',
+    'Jasa Otoritas Keuangan meluncurkan OJK Paket Agustus Kebijakan',
+    'Kementerian Pekerjaan Umum dan Perumahan Rakyat PUPR akan memperketat pengawasan '
+]
 
-sumOfLog = 0
-
-for i, word in enumerate(sentence):
+for x, sentence in enumerate(sentences):
+    s = sentence.lower().split()
     
-    if (i == len(sentence) - 1): break
+    sumOfLog = 0
     
-    word_index1 = unique_bagOfWords.tolist().index(word)
-    word_index2 = unique_bagOfWords.tolist().index(sentence[i + 1])
+    print('Kalimat: ', s)
     
-    prob = bigram_probabilities[word_index1, word_index2]
-    log = math.log2(prob)
+    for i, word in enumerate(s):
+        
+        if (i == len(s) - 1): break
+        
+        word_index1 = unique_bagOfWords.tolist().index(word)
+        word_index2 = unique_bagOfWords.tolist().index(s[i + 1])
+        
+        prob = bigram_probabilities[word_index1, word_index2]
+        log = math.log2(prob)
+        
+        sumOfLog += log
+        
+    print('Sum of Log ', sumOfLog)
     
-    sumOfLog += log
+    # Perplexity = 2 pangkat -l, l = 1/M * (Sum of Log)
     
-print('Sum of Log ', sumOfLog)
-
-l = 1/len(sentence) * sumOfLog
-perplexity = math.pow(2, -1 * l)
-
-print('Perplexity: ', perplexity)
-
-# Perplexity = 2 pangkat -l, l = 1/M * (Sum of Log)
-
-print('Index Agustus: ' + str(unique_bagOfWords.tolist().index('agustus')))
-print('Index Akhir: ' + str(unique_bagOfWords.tolist().index('akhir')))
-
-print('Prob: ' +str(bigram_probabilities[unique_bagOfWords.tolist().index('agustus'), unique_bagOfWords.tolist().index('akhir')]))
+    l = 1/len(s) * sumOfLog
+    perplexity = math.pow(2, -1 * l)
+    
+    print('Perplexity: ', perplexity)
 
 pandas.DataFrame(bigram_probabilities).to_csv('Bigram_Probabilities.csv', index=False, header=False)
 pandas.DataFrame(unique_bagOfWords).to_csv('BagOfWords.csv', index=False, header=False)

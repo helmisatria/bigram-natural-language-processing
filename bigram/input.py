@@ -2,13 +2,13 @@
 """
 Created on Thu Sep  6 00:28:40 2018
 
-@author: user
+@author: Helmi Satria
 """
 
 import numpy as np
 import pandas
 
-unique_bagOfWords = pandas.read_csv('bagOfWords.csv', names=['words'])['words'].tolist()
+unique_bagOfWords = pandas.read_csv('BagOfWords.csv', names=['words'])['words'].tolist()
 bigram_probabilities = pandas.read_csv('Bigram_Probabilities.csv', header=None).values.tolist()
 
 
@@ -29,4 +29,3 @@ while (kata != '99'):
         
     else:
         print('kata tidak ditemukan')
-         
